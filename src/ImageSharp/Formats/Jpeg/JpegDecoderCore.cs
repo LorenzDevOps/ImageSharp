@@ -93,6 +93,10 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
         /// </summary>
         private AdobeMarker adobe;
 
+        private int? lineOffset;
+
+        private int? lineLength;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JpegDecoderCore" /> class.
         /// </summary>
@@ -126,6 +130,8 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
         /// Gets the image height
         /// </summary>
         public int ImageHeight => this.ImageSizeInPixels.Height;
+
+
 
         /// <summary>
         /// Gets the color depth, in number of bits per pixel.
@@ -218,6 +224,14 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
             this.InitIccProfile();
             this.InitDerivedMetadataProperties();
             return this.PostProcessIntoImage<TPixel>();
+        }
+
+        public Image<TPixel> Decode<TPixel>(Stream stream, int scanLinesOffset, int scanLinesLength)
+            where TPixel : struct, IPixel<TPixel>
+        {
+            this.lineOffset = scanLinesOffset;
+            this.lineLength = scanLinesLength;
+            return this.Decode<TPixel>(stream);
         }
 
         /// <summary>
@@ -741,6 +755,15 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
                 SamplesPerLine = (short)((this.temp[3] << 8) | this.temp[4]),
                 ComponentCount = this.temp[5]
             };
+
+            if (this.lineLength != null && this.lineLength > this.Frame.Scanlines)
+            {
+                JpegThrowHelper.ThrowInvalidImageDimensions(this.Frame.SamplesPerLine, (int)this.lineLength);
+            } else if (this.lineLength != null && this.lineOffset != null)
+            {
+                this.Frame.Scanlines = (short)this.lineLength;
+                this.Frame.LineOffset = (int)this.lineOffset;
+            }
 
             if (this.Frame.SamplesPerLine == 0 || this.Frame.Scanlines == 0)
             {

@@ -128,7 +128,7 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         {
             // Interleaved
             int mcu = 0;
-            int mcusPerColumn = this.frame.McusPerColumn;
+            int mcusPerColumn = this.frame.McusPerColumn + this.frame.McusPerColumnOffset;
             int mcusPerLine = this.frame.McusPerLine;
             ref HuffmanScanBuffer buffer = ref this.scanBuffer;
 
@@ -166,7 +166,12 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
                         // by the basic H and V specified for the component
                         for (int y = 0; y < v; y++)
                         {
-                            int blockRow = (mcuRow * v) + y;
+                            if (mcuRow >= this.frame.McusPerColumnOffset)
+                            {
+                                mcuRow -= this.frame.McusPerColumnOffset;
+                            }
+
+                            int blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
                             Span<Block8x8> blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
                             ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
@@ -192,6 +197,11 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
                     // so now count down the restart interval
                     mcu++;
                     this.HandleRestart();
+                }
+
+                if ((j + 1) % (mcusPerColumn / 4) == 0)
+                {
+                    var aa = "test2";
                 }
             }
         }

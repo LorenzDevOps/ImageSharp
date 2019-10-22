@@ -9,6 +9,9 @@ using SixLabors.ImageSharp.Tests.ProfilingBenchmarks;
 namespace SixLabors.ImageSharp.Sandbox46
 {
     using System;
+    using System.IO;
+    using SixLabors.ImageSharp.Formats.Jpeg;
+    using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Tests.Formats.Jpg;
 
     using Xunit.Abstractions;
@@ -35,8 +38,8 @@ namespace SixLabors.ImageSharp.Sandbox46
 
             // RunDecodeJpegProfilingTests();
             // RunToVector4ProfilingTest();
-            RunResizeProfilingTest();
-
+            //RunResizeProfilingTest();
+            TestDecode();
             Console.ReadLine();
         }
 
@@ -66,6 +69,36 @@ namespace SixLabors.ImageSharp.Sandbox46
             {
                 string fileName = (string)data[0];
                 benchmarks.DecodeJpeg(fileName);
+            }
+        }
+
+        private static void TestDecode()
+        {
+            using (var stream = new FileStream(@"C:\Users\Anna\source\repos\HiveClient\src\Website\wwwroot\areaMapping\5e74f1322df24ae8bae2a9058ed36eb9\raw\2511c7d2db6346dea86bce10fc1ecaad.jpg", FileMode.Open))
+            {
+                using (var image = new JpegDecoder().Decode<Rgba32>(new Configuration(), stream, 0, 2560))
+                {
+                    image.Save(@"C:\Users\Anna\Downloads\tester2\test10.jpg", new JpegEncoder());
+                    stream.Position = 0;
+                }
+
+                using (var image2 = new JpegDecoder().Decode<Rgba32>(new Configuration(), stream, 2560, 2560))
+                {
+                    image2.Save(@"C:\Users\Anna\Downloads\tester2\test11.jpg", new JpegEncoder());
+                    stream.Position = 0;
+                }
+
+                using (var image3 = new JpegDecoder().Decode<Rgba32>(new Configuration(), stream, 2 * 2560, 2560))
+                {
+                    image3.Save(@"C:\Users\Anna\Downloads\tester2\test12.jpg", new JpegEncoder());
+                    stream.Position = 0;
+                }
+
+                using (var image4 = new JpegDecoder().Decode<Rgba32>(new Configuration(), stream, 3 * 2560, 2560))
+                {
+                    image4.Save(@"C:\Users\Anna\Downloads\tester2\test13.jpg", new JpegEncoder());
+                }
+                    
             }
         }
     }

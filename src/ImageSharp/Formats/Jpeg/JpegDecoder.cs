@@ -1,4 +1,4 @@
-﻿// Copyright (c) Six Labors and contributors.
+// Copyright (c) Six Labors and contributors.
 // Licensed under the Apache License, Version 2.0.
 
 using System.IO;
@@ -25,6 +25,17 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
             using (var decoder = new JpegDecoderCore(configuration, this))
             {
                 return decoder.Decode<TPixel>(stream);
+            }
+        }
+
+        public Image<TPixel> Decode<TPixel>(Configuration configuration, Stream stream, int scanLineOffset, int scanLineLength)
+            where TPixel : struct, IPixel<TPixel>
+        {
+            Guard.NotNull(stream, nameof(stream));
+
+            using (var decoder = new JpegDecoderCore(configuration, this))
+            {
+                return decoder.Decode<TPixel>(stream, scanLineOffset, scanLineLength);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Six Labors and contributors.
+// Copyright (c) Six Labors and contributors.
 // Licensed under the Apache License, Version 2.0.
 
 using System;
@@ -29,6 +29,8 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         /// Gets or sets the number of scanlines within the frame.
         /// </summary>
         public short Scanlines { get; set; }
+
+        public int LineOffset { get; set; }
 
         /// <summary>
         /// Gets or sets the number of samples per scanline.
@@ -76,6 +78,8 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         /// </summary>
         public int McusPerColumn { get; set; }
 
+        public int McusPerColumnOffset { get; set; }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -97,6 +101,7 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         {
             this.McusPerLine = (int)MathF.Ceiling(this.SamplesPerLine / 8F / this.MaxHorizontalFactor);
             this.McusPerColumn = (int)MathF.Ceiling(this.Scanlines / 8F / this.MaxVerticalFactor);
+            this.McusPerColumnOffset = (int)MathF.Ceiling(this.LineOffset / 8F / this.MaxVerticalFactor);
 
             for (int i = 0; i < this.ComponentCount; i++)
             {
