@@ -166,13 +166,19 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
                         // by the basic H and V specified for the component
                         for (int y = 0; y < v; y++)
                         {
-                            if (mcuRow >= this.frame.McusPerColumnOffset)
+                            Span<Block8x8> blockSpan;
+                            int blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
+                            if (this.frame.IsSubFrame && mcuRow < this.frame.McusPerColumnOffset)
+                            {
+                                // NB!!! no color when using placeholder even though a placeholder exists for all components (for each color)
+                                blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow); 
+                            } else
                             {
                                 mcuRow -= this.frame.McusPerColumnOffset;
+                                blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
+                                blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
                             }
 
-                            int blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
-                            Span<Block8x8> blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
                             ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
                             for (int x = 0; x < h; x++)
@@ -198,11 +204,6 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
                     mcu++;
                     this.HandleRestart();
                 }
-
-                if ((j + 1) % (mcusPerColumn / 4) == 0)
-                {
-                    var aa = "test2";
-                }
             }
         }
 
@@ -212,7 +213,7 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
             ref HuffmanScanBuffer buffer = ref this.scanBuffer;
 
             int w = component.WidthInBlocks;
-            int h = component.HeightInBlocks;
+            int h = component.HeightInBlocks + this.frame.McusPerColumnOffset;
 
             ref HuffmanTable dcHuffmanTable = ref this.dcHuffmanTables[component.DCHuffmanTableId];
             ref HuffmanTable acHuffmanTable = ref this.acHuffmanTables[component.ACHuffmanTableId];

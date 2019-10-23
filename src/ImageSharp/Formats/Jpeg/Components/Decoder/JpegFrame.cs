@@ -1,6 +1,7 @@
 // Copyright (c) Six Labors and contributors.
 // Licensed under the Apache License, Version 2.0.
 
+using SixLabors.ImageSharp.Memory;
 using System;
 
 namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
@@ -21,6 +22,11 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         public bool Progressive { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the frame is a subset of the original frame
+        /// </summary>
+        public bool IsSubFrame { get; set; }
+
+        /// <summary>
         /// Gets or sets the precision.
         /// </summary>
         public byte Precision { get; set; }
@@ -28,14 +34,17 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         /// <summary>
         /// Gets or sets the number of scanlines within the frame.
         /// </summary>
-        public short Scanlines { get; set; }
+        public ushort Scanlines { get; set; }
 
+        /// <summary>
+        /// Gets or sets the offset of scanlines.
+        /// </summary>
         public int LineOffset { get; set; }
 
         /// <summary>
         /// Gets or sets the number of samples per scanline.
         /// </summary>
-        public short SamplesPerLine { get; set; }
+        public ushort SamplesPerLine { get; set; }
 
         /// <summary>
         /// Gets or sets the number of components within a frame. In progressive frames this value can range from only 1 to 4.
@@ -78,6 +87,9 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         /// </summary>
         public int McusPerColumn { get; set; }
 
+        /// <summary>
+        /// Gets or sets the offset of MCU's per column.
+        /// </summary>
         public int McusPerColumnOffset { get; set; }
 
         /// <inheritdoc/>
@@ -101,12 +113,19 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         {
             this.McusPerLine = (int)MathF.Ceiling(this.SamplesPerLine / 8F / this.MaxHorizontalFactor);
             this.McusPerColumn = (int)MathF.Ceiling(this.Scanlines / 8F / this.MaxVerticalFactor);
-            this.McusPerColumnOffset = (int)MathF.Ceiling(this.LineOffset / 8F / this.MaxVerticalFactor);
+            if (this.IsSubFrame)
+            {
+                this.McusPerColumnOffset = (int)MathF.Ceiling(this.LineOffset / 8F / this.MaxVerticalFactor);
+            }
 
             for (int i = 0; i < this.ComponentCount; i++)
             {
                 JpegComponent component = this.Components[i];
                 component.Init();
+                if (this.IsSubFrame)
+                {
+                    component.InitPlaceholder();
+                }
             }
         }
     }

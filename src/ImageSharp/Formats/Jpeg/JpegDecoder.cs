@@ -28,6 +28,16 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
             }
         }
 
+        /// <summary>
+        /// Decodes a subset image from the specified <see cref="Stream"/> by an pixel line offset and length
+        /// and sets the data to image.
+        /// </summary>
+        /// <typeparam name="TPixel">The pixel format.</typeparam>
+        /// <param name="configuration">The configuration for the image.</param>
+        /// <param name="stream">The stream, where the image should be.</param>
+        /// <param name="scanLineOffset">The pixel line offset to load.</param>
+        /// <param name="scanLineLength">The length of pixel lines to load.</param>
+        /// <returns>The decoded image.</returns>
         public Image<TPixel> Decode<TPixel>(Configuration configuration, Stream stream, int scanLineOffset, int scanLineLength)
             where TPixel : struct, IPixel<TPixel>
         {

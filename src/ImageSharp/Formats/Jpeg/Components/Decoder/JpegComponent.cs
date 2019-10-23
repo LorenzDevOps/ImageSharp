@@ -1,4 +1,4 @@
-﻿// Copyright (c) Six Labors and contributors.
+// Copyright (c) Six Labors and contributors.
 // Licensed under the Apache License, Version 2.0.
 
 using System;
@@ -66,6 +66,8 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
 
         /// <inheritdoc />
         public Buffer2D<Block8x8> SpectralBlocks { get; private set; }
+
+        public Buffer2D<Block8x8> PlaceholderBlock { get; private set; }
 
         /// <inheritdoc />
         public Size SubSamplingDivisors { get; private set; }
@@ -136,6 +138,12 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
             int height = totalNumberOfBlocks / width;
 
             this.SpectralBlocks = this.memoryAllocator.Allocate2D<Block8x8>(width, height, AllocationOptions.Clean);
+        }
+
+        public void InitPlaceholder()
+        {
+            this.PlaceholderBlock = this.memoryAllocator
+                .Allocate2D<Block8x8>(this.SpectralBlocks.Width, this.SpectralBlocks.Height, AllocationOptions.Clean);
         }
     }
 }
