@@ -57,6 +57,21 @@ namespace SixLabors.ImageSharp.Tests.Formats.Jpg
             { TestImages.Jpeg.Issues.IncorrectQuality845, 99 }
         };
 
+        public static readonly TheoryData<string, int, int> OffsetFiles =
+        new TheoryData<string, int, int>
+        {
+            { TestImages.Jpeg.Baseline.Jpeg400, 600, 800 },
+            { TestImages.Jpeg.Baseline.Jpeg420Exif, 2048, 1536 },
+            { TestImages.Jpeg.Baseline.Jpeg420Small, 200, 100 }
+        };
+
+        public static readonly TheoryData<string> ProgressiveFiles =
+        new TheoryData<string>
+        {
+            { TestImages.Jpeg.Progressive.Progress },
+            { TestImages.Jpeg.Progressive.Fb }
+        };
+
         [Theory]
         [MemberData(nameof(MetaDataTestData))]
         public void MetaDataIsParsedCorrectly(
@@ -90,6 +105,45 @@ namespace SixLabors.ImageSharp.Tests.Formats.Jpg
                     Assert.Equal(yResolution, meta.VerticalResolution);
                     Assert.Equal(resolutionUnit, meta.ResolutionUnits);
                 }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(OffsetFiles))]
+        public void Decode_VerifyOffset(string imagePath, int xPixels, int yPixels)
+        {
+            var testFile = TestFile.Create(imagePath);
+            using (var stream = new MemoryStream(testFile.Bytes, false))
+            {
+                var decoder = new JpegDecoder();
+                int length = (int)Math.Ceiling((double)yPixels / 4);
+
+                for (int offset = 0; offset < yPixels; offset += length)
+                {
+                    length = (offset + length) < yPixels ? length : yPixels - offset;
+                    using (Image<Rgba32> image = decoder.Decode<Rgba32>(Configuration.Default, stream, offset, length))
+                    {
+                        Assert.Equal(xPixels, image.Width);
+                        Assert.Equal(length, image.Height);
+                    }                    
+                    stream.Position = 0;
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ProgressiveFiles))]
+        public void Decode_ProgressiveOffset_ExceptionThrown(string imagePath)
+        {
+            var testFile = TestFile.Create(imagePath);
+            using (var stream = new MemoryStream(testFile.Bytes, false))
+            {
+                var decoder = new JpegDecoder();
+                int lineOffset = 0;
+                int lineLength = 1;
+
+                Assert.Throws<NotImplementedException>(() =>
+                    decoder.Decode<Rgba32>(Configuration.Default, stream, lineOffset, lineLength));
             }
         }
 

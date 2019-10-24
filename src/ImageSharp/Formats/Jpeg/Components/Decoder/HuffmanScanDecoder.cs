@@ -101,9 +101,12 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
             {
                 this.ParseBaselineData();
             }
-            else
+            else if (!this.frame.IsSubFrame)
             {
                 this.ParseProgressiveData();
+            } else
+            {
+                throw new NotImplementedException("Loading the image with a line offset is not implemented for progressive JPEG images.");
             }
 
             if (this.scanBuffer.HasBadMarker())
@@ -167,15 +170,15 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
                         for (int y = 0; y < v; y++)
                         {
                             Span<Block8x8> blockSpan;
-                            int blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
                             if (this.frame.IsSubFrame && mcuRow < this.frame.McusPerColumnOffset)
                             {
-                                // NB!!! no color when using placeholder even though a placeholder exists for all components (for each color)
-                                blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow); 
-                            } else
+                                int blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
+                                blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow);
+                            }
+                            else
                             {
-                                mcuRow -= this.frame.McusPerColumnOffset;
-                                blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
+                                int row = (mcuRow - this.frame.McusPerColumnOffset) % this.frame.McusPerColumn;
+                                int blockRow = (row * v) + y;
                                 blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
                             }
 
@@ -222,7 +225,18 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
 
             for (int j = 0; j < h; j++)
             {
-                Span<Block8x8> blockSpan = component.SpectralBlocks.GetRowSpan(j);
+                Span<Block8x8> blockSpan;
+                if (this.frame.IsSubFrame && j < this.frame.McusPerColumnOffset)
+                {
+                    int blockRow = j % component.HeightInBlocks;
+                    blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow);
+                }
+                else
+                {
+                    int blockRow = (j - this.frame.McusPerColumnOffset) % component.HeightInBlocks;
+                    blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
+                }
+
                 ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
                 for (int i = 0; i < w; i++)
@@ -311,7 +325,7 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
         {
             // Interleaved
             int mcu = 0;
-            int mcusPerColumn = this.frame.McusPerColumn;
+            int mcusPerColumn = this.frame.McusPerColumn + this.frame.McusPerColumnOffset;
             int mcusPerLine = this.frame.McusPerLine;
             ref HuffmanScanBuffer buffer = ref this.scanBuffer;
 
@@ -344,8 +358,19 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
                         // by the basic H and V specified for the component
                         for (int y = 0; y < v; y++)
                         {
-                            int blockRow = (mcuRow * v) + y;
-                            Span<Block8x8> blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
+                            Span<Block8x8> blockSpan;
+                            if (this.frame.IsSubFrame && mcuRow < this.frame.McusPerColumnOffset)
+                            {
+                                int blockRow = ((mcuRow % this.frame.McusPerColumn) * v) + y;
+                                blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow);
+                            }
+                            else
+                            {
+                                int row = (mcuRow - this.frame.McusPerColumnOffset) % this.frame.McusPerColumn;
+                                int blockRow = (row * v) + y;
+                                blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
+                            }
+
                             ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
                             for (int x = 0; x < h; x++)
@@ -378,8 +403,9 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
             JpegComponent component = this.components[this.frame.ComponentOrder[0]];
             ref HuffmanScanBuffer buffer = ref this.scanBuffer;
 
+            int offset = this.frame.McusPerColumnOffset * component.VerticalSamplingFactor;
             int w = component.WidthInBlocks;
-            int h = component.HeightInBlocks;
+            int h = component.HeightInBlocks + offset;
 
             if (this.spectralStart == 0)
             {
@@ -388,7 +414,18 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
 
                 for (int j = 0; j < h; j++)
                 {
-                    Span<Block8x8> blockSpan = component.SpectralBlocks.GetRowSpan(j);
+                    Span<Block8x8> blockSpan;
+                    if (this.frame.IsSubFrame && j < offset)
+                    {
+                        int blockRow = j % component.HeightInBlocks;
+                        blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow);
+                    }
+                    else
+                    {
+                        int blockRow = (j - offset) % component.HeightInBlocks;
+                        blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
+                    }
+
                     ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
                     for (int i = 0; i < w; i++)
@@ -414,7 +451,18 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
 
                 for (int j = 0; j < h; j++)
                 {
-                    Span<Block8x8> blockSpan = component.SpectralBlocks.GetRowSpan(j);
+                    Span<Block8x8> blockSpan;
+                    if (this.frame.IsSubFrame && j < offset)
+                    {
+                        int blockRow = j % component.HeightInBlocks;
+                        blockSpan = component.PlaceholderBlock.GetRowSpan(blockRow);
+                    }
+                    else
+                    {
+                        int blockRow = (j - offset) % component.HeightInBlocks;
+                        blockSpan = component.SpectralBlocks.GetRowSpan(blockRow);
+                    }
+
                     ref Block8x8 blockRef = ref MemoryMarshal.GetReference(blockSpan);
 
                     for (int i = 0; i < w; i++)
