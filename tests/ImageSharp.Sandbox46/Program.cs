@@ -34,12 +34,11 @@ namespace SixLabors.ImageSharp.Sandbox46
         /// </param>
         public static void Main(string[] args)
         {
-            // RunJpegColorProfilingTests();
+            RunJpegColorProfilingTests();
 
-            // RunDecodeJpegProfilingTests();
-            // RunToVector4ProfilingTest();
-            //RunResizeProfilingTest();
-            TestDecode();
+            RunDecodeJpegProfilingTests();
+            RunToVector4ProfilingTest();
+            RunResizeProfilingTest();
             Console.ReadLine();
         }
 
@@ -69,28 +68,6 @@ namespace SixLabors.ImageSharp.Sandbox46
             {
                 string fileName = (string)data[0];
                 benchmarks.DecodeJpeg(fileName);
-            }
-        }
-
-        private static void TestDecode()
-        {
-            using (var stream = new FileStream(@"C:\Users\Anna\source\repos\HiveClient\src\Website\wwwroot\areaMapping\5e74f1322df24ae8bae2a9058ed36eb9\raw\2511c7d2db6346dea86bce10fc1ecaad.jpg", FileMode.Open))
-            {
-                var slices = 8;
-                var imageLength = 10240;
-                var length = (int)Math.Ceiling((double)imageLength / slices);
-
-                var offset = 0;
-                while (offset < imageLength)
-                {
-                    var scanLineLength = offset + length < imageLength ? length : imageLength - offset;
-                    using (var image = new JpegDecoder().Decode<Rgba32>(new Configuration(), stream, offset, scanLineLength))
-                    {
-                        image.Save(@"C:\Users\Anna\Downloads\tester2\test" + offset + ".jpg", new JpegEncoder());
-                        stream.Position = 0;
-                    }
-                    offset += scanLineLength;
-                }
             }
         }
     }
