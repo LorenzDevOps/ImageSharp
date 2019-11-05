@@ -67,7 +67,7 @@ namespace SixLabors.ImageSharp.Processing.Processors.Overlays
         /// <summary>
         /// Gets the the radius.
         /// </summary>
-        internal ValueSize Radius { get;  }
+        internal ValueSize Radius { get; }
 
         /// <inheritdoc />
         public IImageProcessor<TPixel> CreatePixelSpecificProcessor<TPixel>(Image<TPixel> source, Rectangle sourceRectangle)

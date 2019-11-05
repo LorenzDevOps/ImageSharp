@@ -137,7 +137,7 @@ namespace SixLabors.ImageSharp.Primitives
         /// </returns>
         [MethodImpl(InliningOptions.ShortMethod)]
 #pragma warning disable SA1008 // Opening parenthesis should be spaced correctly
-        public static implicit operator T[,] (in DenseMatrix<T> data)
+        public static implicit operator T[,](in DenseMatrix<T> data)
 #pragma warning restore SA1008 // Opening parenthesis should be spaced correctly
         {
             var result = new T[data.Rows, data.Columns];

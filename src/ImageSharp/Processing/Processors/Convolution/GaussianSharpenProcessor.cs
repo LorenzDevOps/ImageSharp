@@ -11,7 +11,7 @@ namespace SixLabors.ImageSharp.Processing.Processors.Convolution
     /// </summary>
     public sealed class GaussianSharpenProcessor : IImageProcessor
     {
-         /// <summary>
+        /// <summary>
         /// The default value for <see cref="Sigma"/>.
         /// </summary>
         public const float DefaultSigma = 3f;

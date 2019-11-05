@@ -104,7 +104,8 @@ namespace SixLabors.ImageSharp.Formats.Jpeg.Components.Decoder
             else if (!this.frame.IsSubFrame)
             {
                 this.ParseProgressiveData();
-            } else
+            }
+            else
             {
                 throw new NotImplementedException("Loading the image with a line offset is not implemented for progressive JPEG images.");
             }
