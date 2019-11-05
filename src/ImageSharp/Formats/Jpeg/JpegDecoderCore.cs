@@ -716,8 +716,8 @@ namespace SixLabors.ImageSharp.Formats.Jpeg
 
                     break;
                     default:
-                        JpegThrowHelper.ThrowBadQuantizationTable();
-                        break;
+                    JpegThrowHelper.ThrowBadQuantizationTable();
+                    break;
                 }
 
                 if (done)
