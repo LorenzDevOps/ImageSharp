@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>SixLabors.ImageSharp</AssemblyName>
-    <AssemblyTitle>SixLabors.ImageSharp</AssemblyTitle>
+    <AssemblyTitle>Lorenz.SixLabors.ImageSharp</AssemblyTitle>
     <Description>A cross-platform library for the processing of image files; written in C#</Description>
     <NeutralLanguage>en</NeutralLanguage>
 
@@ -14,7 +14,7 @@
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageId>SixLabors.ImageSharp</PackageId>
+    <PackageId>Lorenz.SixLabors.ImageSharp</PackageId>
     <PackageTags>Image Resize Crop Gif Jpg Jpeg Bitmap Png Core</PackageTags>
     <RootNamespace>SixLabors.ImageSharp</RootNamespace>
   </PropertyGroup>
